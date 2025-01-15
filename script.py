@@ -49,10 +49,19 @@ def open_crop_gui(image_path):
     canvas.create_image(0, 0, anchor=tk.NW, image=tk_image)
 
     crop_coords = []
+    rect_id = None
 
     def on_mouse_press(event):
+        nonlocal rect_id
         crop_coords.clear()
         crop_coords.append((event.x, event.y))
+        # Start drawing rectangle
+        rect_id = canvas.create_rectangle(event.x, event.y, event.x, event.y, outline="red", width=2)
+
+    def on_mouse_drag(event):
+        # Update rectangle dimensions as the mouse is dragged
+        if rect_id:
+            canvas.coords(rect_id, crop_coords[0][0], crop_coords[0][1], event.x, event.y)
 
     def on_mouse_release(event):
         crop_coords.append((event.x, event.y))
@@ -60,6 +69,7 @@ def open_crop_gui(image_path):
         root.destroy()
 
     canvas.bind("<ButtonPress-1>", on_mouse_press)
+    canvas.bind("<B1-Motion>", on_mouse_drag)
     canvas.bind("<ButtonRelease-1>", on_mouse_release)
 
     root.mainloop()
