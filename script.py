@@ -7,18 +7,31 @@ from docx.shared import Inches
 from pynput import keyboard
 import threading
 import os
+import shutil
 from datetime import datetime
 
 # Global Variables
-screenshot_path = "screenshot.png"
-cropped_path = "cropped_screenshot.png"
+temp_folder = "temp"
 word_file_path = "screenshots.docx"
+
+# Ensure temp folder exists
+if not os.path.exists(temp_folder):
+    os.makedirs(temp_folder)
+
+# Clear Temp Folder
+def clear_temp_folder():
+    for file in os.listdir(temp_folder):
+        file_path = os.path.join(temp_folder, file)
+        if os.path.isfile(file_path) or os.path.islink(file_path):
+            os.unlink(file_path)
+        elif os.path.isdir(file_path):
+            shutil.rmtree(file_path)
 
 # Capture Screenshot
 def capture_screenshot():
-    global screenshot_path
-    timestamp = datetime.now().strftime('%Y_%m_%d_%H:%M:%S')
-    screenshot_path = f"temp/screenshot_{timestamp}.png"
+    clear_temp_folder()  # Clear temp folder before capturing a new screenshot
+    timestamp = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+    screenshot_path = os.path.join(temp_folder, f"screenshot_{timestamp}.png")
     screenshot = pyautogui.screenshot()
     screenshot.save(screenshot_path)
     open_crop_gui(screenshot_path)
@@ -53,7 +66,6 @@ def open_crop_gui(image_path):
 
 # Crop Image
 def crop_image(filepath, crop_coords):
-    global cropped_path
     (x1, y1), (x2, y2) = crop_coords
     with Image.open(filepath) as img:
         cropped_img = img.crop((x1, y1, x2, y2))
